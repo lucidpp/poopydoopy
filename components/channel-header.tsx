@@ -3,7 +3,9 @@
 import type { PlayerChannel, BaseChannel } from "@/types/game"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
+import Link from "next/link"
 import { useState } from "react"
 import { AboutChannelModal } from "./about-channel-modal"
 import { SettingsIcon } from "lucide-react"
@@ -82,6 +84,30 @@ export function ChannelHeader({ channel, activeTab }: ChannelHeaderProps) {
           )}
         </div>
       </div>
+
+      <Tabs value={activeTab} className="w-full">
+        <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
+          <TabsTrigger value="home" asChild>
+            <Link href={`/channel/${channel.id}`}>HOME</Link>
+          </TabsTrigger>
+          <TabsTrigger value="videos" asChild>
+            <Link href={`/channel/${channel.id}/videos`}>PUNS</Link>
+          </TabsTrigger>
+          <TabsTrigger value="playlists" asChild>
+            <Link href={`/channel/${channel.id}/playlists`}>PLAYLISTS</Link>
+          </TabsTrigger>
+          <TabsTrigger value="posts" asChild>
+            <Link href={`/channel/${channel.id}/posts`}>POSTS</Link>
+          </TabsTrigger>
+          <TabsTrigger value="releases" asChild>
+            <Link href={`/channel/${channel.id}/releases`}>RELEASES</Link>
+          </TabsTrigger>
+          <TabsTrigger value="about" asChild>
+            <Link href={`/channel/${channel.id}/about`}>ABOUT</Link>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       <AboutChannelModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} channel={channel} />
       {isPlayerChannel && (
         <CustomizeChannelModal

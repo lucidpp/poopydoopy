@@ -1,69 +1,91 @@
 "use client"
 
+import { useState } from "react"
+import { useGame } from "@/components/game-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { SearchIcon, BellIcon, VideoIcon, MenuIcon } from "lucide-react"
-import { useGame } from "@/components/game-provider"
+import { VideoUploadModal } from "@/components/video-upload-modal"
 import { useSidebar } from "@/components/sidebar-context"
 import Link from "next/link"
+import { Menu, Search, Upload, User, DollarSign } from "lucide-react"
 
 export function Header() {
   const { gameState } = useGame()
   const { setIsSidebarOpen } = useSidebar()
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  if (!gameState.isGameStarted) {
+    return null
+  }
+
+  const formatMoney = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b bg-background px-4">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setIsSidebarOpen(true)}>
-          <MenuIcon className="h-6 w-6" />
-        </Button>
-        <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded bg-red-600 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">P</span>
-          </div>
-          <span className="font-bold text-xl hidden sm:inline">Punsta</span>
-        </Link>
-      </div>
-
-      <div className="flex-1 max-w-2xl mx-4">
-        <div className="flex">
-          <Input type="search" placeholder="Search" className="rounded-r-none border-r-0" />
-          <Button variant="outline" className="rounded-l-none px-6 bg-transparent">
-            <SearchIcon className="h-4 w-4" />
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 hidden md:flex">
+          <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
+            <Menu className="h-5 w-5" />
           </Button>
+        </div>
+
+        <div className="mr-6 flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="font-bold text-xl">PUNSTA</div>
+          </Link>
+        </div>
+
+        <div className="flex flex-1 items-center space-x-2 justify-end">
+          <form className="hidden sm:flex items-center space-x-2">
+            <Input
+              type="search"
+              placeholder="Search Puns..."
+              className="w-64"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Button type="submit" size="icon" variant="outline">
+              <Search className="h-4 w-4" />
+            </Button>
+          </form>
+
+          <div className="flex items-center space-x-2">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-green-100 dark:bg-green-900 rounded-full">
+              <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <span className="text-sm font-semibold text-green-700 dark:text-green-300">
+                {formatMoney(gameState.channel.money)}
+              </span>
+            </div>
+
+            <Button onClick={() => setIsUploadModalOpen(true)} size="sm" className="hidden sm:flex">
+              <Upload className="h-4 w-4 mr-2" />
+              Upload
+            </Button>
+
+            <Link href={`/channel/${gameState.channel.id}`}>
+              <Button variant="ghost" size="icon">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={gameState.channel.avatar || "/placeholder.svg"} alt={gameState.channel.name} />
+                  <AvatarFallback>
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <Link href="/studio">
-          <Button variant="ghost" size="icon">
-            <VideoIcon className="h-5 w-5" />
-          </Button>
-        </Link>
-        <Button variant="ghost" size="icon">
-          <BellIcon className="h-5 w-5" />
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={gameState.channel.avatar || "/placeholder.svg"} alt={gameState.channel.name} />
-                <AvatarFallback>{gameState.channel.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuItem asChild>
-              <Link href={`/channel/${gameState.channel.id}`}>Your channel</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/studio">Punsta Studio</Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <VideoUploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
     </header>
   )
 }

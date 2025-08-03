@@ -1,9 +1,9 @@
 "use client"
 
 import { useGame } from "@/components/game-provider"
-import { VideoCard } from "@/components/video-card"
 import { GameSetup } from "@/components/game-setup"
-import type { Video as VideoType, BaseChannel } from "@/types/game"
+import { VideoCard } from "@/components/video-card"
+import { Separator } from "@/components/ui/separator"
 
 export default function HomePage() {
   const { gameState } = useGame()
@@ -12,32 +12,45 @@ export default function HomePage() {
     return <GameSetup />
   }
 
-  const allVideos: { video: VideoType; channel: BaseChannel }[] = [
-    ...gameState.channel.videos.map((video) => ({ video, channel: gameState.channel })),
-    ...gameState.otherChannels.flatMap((otherChannel) =>
-      otherChannel.videos.map((video) => ({ video, channel: otherChannel })),
-    ),
-  ]
+  // Get all videos from all channels
+  const allVideos = [...gameState.channel.videos, ...gameState.otherChannels.flatMap((channel) => channel.videos)]
+    .filter((video) => !video.isProcessing)
+    .sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime())
 
-  const displayVideos = allVideos
-    .filter(({ video }) => !video.isProcessing)
-    .sort((a, b) => new Date(b.video.uploadDate).getTime() - new Date(a.video.uploadDate).getTime())
+  const getChannelForVideo = (videoId: string) => {
+    const playerVideo = gameState.channel.videos.find((v) => v.id === videoId)
+    if (playerVideo) return gameState.channel
+
+    for (const channel of gameState.otherChannels) {
+      if (channel.videos.find((v) => v.id === videoId)) {
+        return channel
+      }
+    }
+    return null
+  }
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">Home</h1>
-      {displayVideos.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-xl text-muted-foreground mb-4">Welcome to Punsta!</p>
-          <p className="text-muted-foreground">Start by uploading your first Pun to see content here.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {displayVideos.map(({ video, channel }) => (
-            <VideoCard key={video.id} video={video} channel={channel} />
-          ))}
-        </div>
-      )}
+    <div className="flex flex-col gap-6 p-6">
+      <div>
+        <h1 className="text-3xl font-bold mb-2">Welcome to PUNSTA</h1>
+        <p className="text-muted-foreground">The Ultimate Rap Simulator</p>
+      </div>
+
+      <Separator />
+
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Latest Puns</h2>
+        {allVideos.length === 0 ? (
+          <p className="text-muted-foreground">No Puns uploaded yet. Start creating!</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {allVideos.slice(0, 20).map((video) => {
+              const channel = getChannelForVideo(video.id)
+              return channel ? <VideoCard key={video.id} video={video} channel={channel} /> : null
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

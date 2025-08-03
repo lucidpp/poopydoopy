@@ -1,5 +1,5 @@
 import type React from "react"
-// types/game.ts
+
 export interface Comment {
   id: string
   user: string
@@ -8,13 +8,13 @@ export interface Comment {
 }
 
 export interface Analytics {
-  countryStats: { [country: string]: number } // e.g., { "USA": 1000, "Canada": 500 }
-  cityStats: { [city: string]: number } // e.g., { "New York": 300, "Los Angeles": 200 }
+  countryStats: { [country: string]: number }
+  cityStats: { [city: string]: number }
   engagement: {
-    averageViewDuration: number // in seconds
-    clickThroughRate: number // percentage
-    likesToViewsRatio: number // percentage
-    dislikesToViewsRatio: number // percentage
+    averageViewDuration: number
+    clickThroughRate: number
+    likesToViewsRatio: number
+    dislikesToViewsRatio: number
   }
 }
 
@@ -29,22 +29,23 @@ export interface Video {
   initialLikes: number
   currentLikes: number
   initialDislikes: number
+  currentDislikes: number
   totalComments: Comment[]
   displayedComments: Comment[]
   analytics: Analytics
-  isProcessing?: boolean // For upload simulation
+  isProcessing?: boolean
   viewIntervalId?: NodeJS.Timeout | null
   commentIntervalId?: NodeJS.Timeout | null
-  type: "video" | "release" // Added: type of content
-  quality: 1 | 2 | 3 | 4 | 5 // Added: popularity/quality level (1=Poor, 5=Masterpiece)
-  videoFileName?: string // Added: for local MP4 simulation
-  videoFileSize?: number // Added: for local MP4 simulation
+  type: "video" | "release"
+  quality: 1 | 2 | 3 | 4 | 5
+  videoFileName?: string
+  videoFileSize?: number
 }
 
 export interface Post {
   id: string
   content: string
-  timestamp: string // ISO string
+  timestamp: string
   likes: number
   comments: number
 }
@@ -54,7 +55,7 @@ export interface Playlist {
   title: string
   description: string
   videoIds: string[]
-  thumbnail: string // Thumbnail of the first video in the playlist
+  thumbnail: string
 }
 
 export interface BaseChannel {
@@ -67,34 +68,33 @@ export interface BaseChannel {
   totalViews: number
   videos: Video[]
   playlists: Playlist[]
-  posts: Post[] // Added: for punster profile posts
-  bio: string // For about section
+  posts: Post[]
+  bio: string
   isVerified: boolean
 }
 
 export interface PlayerChannel extends BaseChannel {
   money: number
   hasAdvertised: boolean
-  homepageLayout: string[] // Added: for customizable homepage sections
-  milestones: string[] // Added: for achieved milestones
+  homepageLayout: string[]
+  milestones: string[]
   analyticsHistory: {
     date: string
     views: number
     subscribers: number
     likes: number
-  }[] // Added: for studio charts
-  punEditingSkill: number // Added: for video editing skill
+  }[]
+  punEditingSkill: number
 }
 
 export interface OtherChannel extends BaseChannel {
   // Other channels might have fewer simulation-specific properties
-  // For now, they can be a subset of PlayerChannel, or have their own unique properties if needed.
 }
 
 export interface GameState {
-  channel: PlayerChannel // Player's channel
-  otherChannels: OtherChannel[] // Other channels in the game world
-  isGameStarted: boolean // Added: to control pre-game setup
+  channel: PlayerChannel
+  otherChannels: OtherChannel[]
+  isGameStarted: boolean
 }
 
 export interface GameContextType {
@@ -115,11 +115,11 @@ export interface GameContextType {
     >,
   ) => void
   addPlaylist: (playlist: Omit<Playlist, "id" | "thumbnail">) => void
-  addPost: (content: string) => void // Added: for adding posts
+  addPost: (content: string) => void
   runAdCampaign: (budget: number) => void
   updateVideoStats: (videoId: string, updates: Partial<Video>) => void
-  startGame: (channelName: string) => void // Added: to start the game with a channel name
-  trainPunEditingSkill: () => void // Added: to train editing skill
+  startGame: (channelName: string, subscriberCount?: number) => void
+  trainPunEditingSkill: () => void
 }
 
 export interface SidebarContextType {

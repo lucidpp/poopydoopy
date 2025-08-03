@@ -1,15 +1,14 @@
-// app/channel/[channelId]/releases/page.tsx
 "use client"
 
-import Link from "next/link"
 import { useGame } from "@/components/game-provider"
 import { ChannelHeader } from "@/components/channel-header"
 import { VideoCard } from "@/components/video-card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { notFound } from "next/navigation"
+import type { Video as VideoType } from "@/types/game"
 
 export default function ChannelReleasesPage({ params }: { params: { channelId: string } }) {
   const { gameState } = useGame()
+
   const channel =
     gameState.channel.id === params.channelId
       ? gameState.channel
@@ -19,42 +18,26 @@ export default function ChannelReleasesPage({ params }: { params: { channelId: s
     notFound()
   }
 
-  const releases = channel.videos.filter((video) => video.type === "release" && !video.isProcessing)
+  const releases = [...channel.videos]
+    .filter((v) => !v.isProcessing && v.type === "release")
+    .sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime())
 
   return (
     <div className="flex flex-col gap-6">
       <ChannelHeader channel={channel} activeTab="releases" />
-      <Tabs defaultValue="releases">
-        <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
-          <TabsTrigger value="home" asChild>
-            <Link href={`/channel/${channel.id}`}>HOME</Link>
-          </TabsTrigger>
-          <TabsTrigger value="videos" asChild>
-            <Link href={`/channel/${channel.id}/videos`}>PUNS</Link> {/* Renamed text */}
-          </TabsTrigger>
-          <TabsTrigger value="playlists" asChild>
-            <Link href={`/channel/${channel.id}/playlists`}>PLAYLISTS</Link>
-          </TabsTrigger>
-          <TabsTrigger value="posts" asChild>
-            <Link href={`/channel/${channel.id}/posts`}>POSTS</Link>
-          </TabsTrigger>
-          <TabsTrigger value="releases" asChild>
-            <Link href={`/channel/${channel.id}/releases`}>RELEASES</Link>
-          </TabsTrigger>
-          <TabsTrigger value="about" asChild>
-            <Link href={`/channel/${channel.id}/about`}>ABOUT</Link>
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="releases" className="pt-4">
+
+      <div className="px-4">
+        <h2 className="text-xl font-bold mb-4">Music Releases</h2>
+        {releases.length === 0 ? (
+          <p className="text-muted-foreground">No music releases yet.</p>
+        ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {releases.length === 0 ? (
-              <p className="col-span-full text-center text-muted-foreground py-10">No releases uploaded yet.</p>
-            ) : (
-              releases.map((video) => <VideoCard key={video.id} video={video} channel={channel} />)
-            )}
+            {releases.map((video: VideoType) => (
+              <VideoCard key={video.id} video={video} channel={channel} />
+            ))}
           </div>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
     </div>
   )
 }

@@ -1,4 +1,3 @@
-// components/game-provider.tsx
 "use client"
 
 import React, { createContext, useState, useContext, useEffect, useRef, useCallback } from "react"
@@ -34,7 +33,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [gameState, setGameState] = useState<GameState>(() => {
     // Initialize state from localStorage
     if (typeof window !== "undefined") {
-      const savedState = localStorage.getItem("punstaSimState") // Renamed localStorage key
+      const savedState = localStorage.getItem("punstaSimState")
       if (savedState) {
         try {
           const parsedState: GameState = JSON.parse(savedState)
@@ -398,7 +397,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           }),
         })),
       }
-      localStorage.setItem("punstaSimState", JSON.stringify(stateToSave)) // Renamed localStorage key
+      localStorage.setItem("punstaSimState", JSON.stringify(stateToSave))
       console.log("Game state saved to localStorage.")
     } catch (error) {
       console.error("Failed to save game state to localStorage:", error)
@@ -565,13 +564,16 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   )
 
   const startGame = useCallback(
-    (channelName: string) => {
+    (channelName: string, subscriberCount = 1000) => {
       setGameState({
         channel: {
           ...initialChannelDataTemplate,
           name: channelName,
           handle: `@${channelName.replace(/\s/g, "")}Official`, // Generate handle from name
-          analyticsHistory: [{ date: new Date().toISOString().split("T")[0], views: 0, subscribers: 0, likes: 0 }], // Initial analytics entry
+          subscribers: subscriberCount, // Use the selected subscriber count
+          analyticsHistory: [
+            { date: new Date().toISOString().split("T")[0], views: 0, subscribers: subscriberCount, likes: 0 },
+          ], // Initial analytics entry
         },
         otherChannels: initialOtherChannels, // Re-initialize other channels
         isGameStarted: true,
@@ -579,7 +581,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem("punstaSimState") // Clear any old state
       toast({
         title: "Game Started!",
-        description: `Welcome, ${channelName}! Your journey to rap stardom begins.`,
+        description: `Welcome, ${channelName}! Your journey to rap stardom begins with ${subscriberCount.toLocaleString()} subscribers.`,
       })
     },
     [toast],
